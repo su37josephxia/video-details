@@ -1,0 +1,19 @@
+{
+  "name": "video-details",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "bin": {
+    "video-details": "./bin/details"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "ffmpeg": "0.0.4",
+    "glob": "^7.1.4"
+  }
+}

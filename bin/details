@@ -1,0 +1,30 @@
+#!/usr/bin/env node
+
+const ffmpeg = require('ffmpeg')
+const glob = require('glob')
+const {
+    join,
+    resolve
+} = require('path')
+
+const loader = async (folder, callback, options = {}) => {
+    const extname = options.extname || '.{mp4,}'
+    const path = join(folder, `./**/*${extname}`)
+    const ary = glob.sync(path)
+    let sum = 0
+    for (item of ary) {
+        sum += await callback(item)
+
+    }
+    console.log(`🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀`)
+    console.log(`Total: ${(sum / 60 / 60).toFixed(2)}hours`)
+    console.log(`🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀`)
+}
+
+const metaVideo = async path => {
+    const video = await new ffmpeg(path)
+    console.log(`${path}\t${video.metadata.duration.raw}`);
+    return video.metadata.duration.seconds
+}
+
+loader(resolve('./'), metaVideo)
