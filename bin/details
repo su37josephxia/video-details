@@ -8,7 +8,7 @@ const {
 } = require('path')
 
 const loader = async (folder, callback, options = {}) => {
-    const extname = options.extname || '.{mp4,}'
+    const extname = options.extname || '.{mp4,avi,mov,flv}'
     const path = join(folder, `./**/*${extname}`)
     const ary = glob.sync(path)
     let sum = 0
