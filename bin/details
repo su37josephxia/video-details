@@ -1,30 +1,54 @@
 #!/usr/bin/env node
 
-const ffmpeg = require('ffmpeg')
+const {relative} = require('path')
+
+// ffmpeg 静态化安装库 可以按照系统安装 ffmpeg 并提供可执行文件路径
+// const ffmpeg = require('ffmpeg-static')
+
+var ffprobe = require('ffprobe'),
+    ffprobeStatic = require('ffprobe-static');
+
+
 const glob = require('glob')
 const {
     join,
     resolve
 } = require('path')
 
-const loader = async (folder, callback, options = {}) => {
-    const extname = options.extname || '.{mp4,avi,mov,flv}'
+async function metaVideo(path) {
+    const info = await getVideoInfo(path)
+    const relativePath = relative(resolve('./') , path)
+    const wh = `${info.streams[0].width}*${info.streams[0].height}`
+    const duration = (info.streams[0].duration / 60).toFixed(1)
+    console.log(`${relativePath}\t${ duration }min\t${wh}`);
+    return parseInt(info.streams[0].duration)
+}
+
+async function getVideoInfo(path) {
+    return new Promise((res) => {
+        ffprobe(path, { path: ffprobeStatic.path }, function (err, info) {
+            if (err) return done(err);
+            res(info)
+        })
+    }) 
+}
+
+const loader = async (folder) => {
+    const extname = '.{mp4,avi,mov,flv}'
     const path = join(folder, `./**/*${extname}`)
-    const ary = glob.sync(path)
-    let sum = 0
-    for (item of ary) {
-        sum += await callback(item)
 
-    }
-    console.log(`🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀`)
+    const times = await Promise.all(glob.sync(path).map(async v => (await metaVideo(v))))
+    
+    const sum = times.reduce((prev, cur) => prev + cur)
+     
+    console.log(`---------------`)
     console.log(`Total: ${(sum / 60 / 60).toFixed(2)}hours`)
-    console.log(`🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀`)
+    console.log(`---------------`)
 }
 
-const metaVideo = async path => {
-    const video = await new ffmpeg(path)
-    console.log(`${path}\t${video.metadata.duration.raw}`);
-    return video.metadata.duration.seconds
-}
 
-loader(resolve('./'), metaVideo)
+process.nextTick(async () => {
+    await loader(resolve('./'))
+})
+
+
